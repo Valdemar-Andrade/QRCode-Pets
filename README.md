@@ -256,59 +256,6 @@ O sistema usa JWT (JSON Web Tokens) para autenticação. Os tokens são armazena
    - `JWT_SECRET`: Chave secreta forte
    - `NEXTAUTH_URL`: URL do seu serviço no Render
 
-5. **Deploy**:
-   - Render irá fazer o build e deploy automaticamente
-   - Execute as migrations após o primeiro deploy
-
-### Opção 3: Railway
-
-1. **Crie uma conta no Railway**:
-   - Acesse [railway.app](https://railway.app)
-
-2. **Crie um novo projeto**:
-   - Conecte seu repositório GitHub
-   - Adicione um serviço "PostgreSQL"
-   - Adicione um serviço "GitHub Repo" (seu projeto Next.js)
-
-3. **Configure as variáveis de ambiente**:
-   - Railway automaticamente cria a variável `DATABASE_URL` do PostgreSQL
-   - Adicione `JWT_SECRET` e `NEXTAUTH_URL`
-
-4. **Deploy**:
-   - Railway fará o deploy automaticamente
-   - Execute as migrations após o primeiro deploy
-
-### Configuração do Banco de Dados em Produção
-
-Após criar o banco de dados, execute as migrations:
-
-```bash
-# Localmente (conectado ao banco de produção)
-DATABASE_URL="sua-url-de-producao" npx prisma db push
-
-# Ou adicione um script de deploy no package.json
-```
-
-### Variáveis de Ambiente de Produção
-
-Certifique-se de configurar:
-
-```env
-DATABASE_URL="postgresql://user:password@host:5432/database?schema=public"
-JWT_SECRET="uma-chave-super-secreta-e-longa-aqui"
-NEXTAUTH_URL="https://seu-dominio.com"
-```
-
-### Build de Produção
-
-```bash
-# Build local
-npm run build
-
-# Iniciar servidor de produção
-npm start
-```
-
 ## 🔐 Segurança
 
 - Senhas são hashadas com bcrypt
@@ -353,5 +300,5 @@ Se você encontrar algum problema ou tiver dúvidas, abra uma issue no repositó
 
 ---
 
-Desenvolvido com ❤️ para ajudar a proteger e identificar nossos pets
+Desenvolvido pelo valdemar-andrade com ❤️ para ajudar a proteger e identificar nossos pets
 
