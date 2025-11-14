@@ -53,70 +53,78 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100 px-4 py-8 relative overflow-hidden">
+      {/* Decorações de fundo com tema Pet */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-10 left-10 text-6xl opacity-10 animate-bounce" style={{ animationDuration: '3s' }}>🐾</div>
+        <div className="absolute top-32 right-20 text-5xl opacity-10 animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}>🐶</div>
+        <div className="absolute top-60 left-20 text-4xl opacity-10 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '1s' }}>🐱</div>
+        <div className="absolute bottom-40 right-10 text-6xl opacity-10 animate-bounce" style={{ animationDuration: '4.5s', animationDelay: '1.5s' }}>❤️</div>
+        <div className="absolute bottom-20 left-32 text-5xl opacity-10 animate-bounce" style={{ animationDuration: '3.8s', animationDelay: '2s' }}>🌟</div>
+      </div>
+
+      <div className="max-w-md w-full space-y-8 bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl border border-pink-200 relative z-10">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Registrar</h1>
-          <p className="mt-2 text-gray-600">
-            Crie sua conta para começar a gerenciar seus pets
+          <div className="mb-4">
+            <span className="text-6xl">🎉</span>
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+            Crie sua conta
+          </h1>
+          <p className="mt-3 text-gray-600 text-lg">
+            Comece a proteger e identificar seus pets hoje mesmo!
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-6">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="bg-red-50 border-2 border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{error}</span>
             </div>
           )}
 
-          <Input
-            label="Nome"
-            type="text"
-            {...register('name')}
-            error={errors.name?.message}
-            placeholder="Seu nome completo"
-          />
+          <div className="space-y-4">
+            <Input
+              label="Nome"
+              type="text"
+              {...register('name')}
+              error={errors.name?.message}
+              placeholder="Seu nome completo"
+            />
 
-          <Input
-            label="Email"
-            type="email"
-            {...register('email')}
-            error={errors.email?.message}
-            placeholder="seu@email.com"
-          />
+            <Input
+              label="Email"
+              type="email"
+              {...register('email')}
+              error={errors.email?.message}
+              placeholder="seu@email.com"
+            />
 
-          <Input
-            label="Senha"
-            type="password"
-            {...register('password')}
-            error={errors.password?.message}
-            placeholder="••••••••"
-          />
+            <Input
+              label="Senha"
+              type="password"
+              {...register('password')}
+              error={errors.password?.message}
+              placeholder="••••••••"
+            />
+          </div>
 
-          <Button type="submit" className="w-full" isLoading={isLoading}>
-            Criar conta
+          <Button type="submit" className="w-full text-lg py-3" isLoading={isLoading}>
+            {isLoading ? 'Criando conta...' : 'Criar conta 🐾'}
           </Button>
         </form>
 
-        <div className="text-center">
+        <div className="text-center pt-4">
           <p className="text-sm text-gray-600">
             Já tem uma conta?{' '}
             <Link
               href="/auth/login"
-              className="font-medium text-indigo-600 hover:text-indigo-500"
+              className="font-semibold text-pink-600 hover:text-pink-700 transition-colors"
             >
-              Faça login
+              Faça login! 🐶
             </Link>
           </p>
-        </div>
-
-        <div className="text-center">
-          <Link
-            href="/"
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Voltar para a página inicial
-          </Link>
         </div>
       </div>
     </div>

@@ -6,7 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Card, CardBody } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
+import { ImageUpload } from '@/components/ui/ImageUpload';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updatePetSchema, type UpdatePetInput } from '@/lib/validations/pet';
@@ -16,6 +18,7 @@ interface Pet {
   name: string;
   breed: string | null;
   species: string;
+  gender: string | null;
   birthDate: Date | null;
   color: string | null;
   weight: number | null;
@@ -31,15 +34,20 @@ export default function EditPetPage() {
   const [pet, setPet] = useState<Pet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [photoBase64, setPhotoBase64] = useState<string>('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<UpdatePetInput>({
     resolver: zodResolver(updatePetSchema),
   });
+
+  const photoUrl = watch('photoUrl');
 
   useEffect(() => {
     fetchPet();
@@ -64,19 +72,22 @@ export default function EditPetPage() {
       setPet(petData);
 
       // Preencher formulário
+      const photo = petData.photoUrl || '';
       reset({
         name: petData.name,
         breed: petData.breed || '',
         species: petData.species,
+        gender: petData.gender || '',
         birthDate: petData.birthDate
           ? new Date(petData.birthDate).toISOString().split('T')[0]
           : '',
         color: petData.color || '',
         weight: petData.weight || undefined,
-        photoUrl: petData.photoUrl || '',
+        photoUrl: photo,
         medicalInfo: petData.medicalInfo || '',
         isLost: petData.isLost,
       });
+      setPhotoBase64(photo);
     } catch (error) {
       console.error('Error fetching pet:', error);
       alert('Erro ao carregar pet');
@@ -88,12 +99,17 @@ export default function EditPetPage() {
   const onSubmit = async (data: UpdatePetInput) => {
     setIsSaving(true);
     try {
+      const petData = {
+        ...data,
+        photoUrl: photoBase64 || data.photoUrl || '',
+      };
+
       const response = await fetch(`/api/pets/${petId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(petData),
       });
 
       if (!response.ok) {
@@ -164,11 +180,22 @@ export default function EditPetPage() {
               error={errors.breed?.message}
             />
 
+            <Select
+              label="Gênero"
+              {...register('gender')}
+              error={errors.gender?.message}
+              options={[
+                { value: 'Macho', label: 'Macho' },
+                { value: 'Fêmea', label: 'Fêmea' },
+              ]}
+            />
+
             <Input
-              label="Data de Nascimento"
+              label="Data de Nascimento ou Adoção"
               type="date"
               {...register('birthDate')}
               error={errors.birthDate?.message}
+              helperText="Se não souber a data exata, use a data de adoção ou uma data aproximada"
             />
 
             <Input
@@ -185,10 +212,13 @@ export default function EditPetPage() {
               error={errors.weight?.message}
             />
 
-            <Input
-              label="URL da Foto"
-              type="url"
-              {...register('photoUrl')}
+            <ImageUpload
+              label="Foto do Pet"
+              value={photoBase64 || photoUrl || ''}
+              onChange={(base64) => {
+                setPhotoBase64(base64);
+                setValue('photoUrl', base64);
+              }}
               error={errors.photoUrl?.message}
             />
 

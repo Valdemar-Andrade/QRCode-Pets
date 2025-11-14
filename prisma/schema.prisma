@@ -25,6 +25,7 @@ model Pet {
   name        String
   breed       String?
   species     String
+  gender      String?  // Macho, Fêmea, ou null
   birthDate   DateTime?
   color       String?
   weight      Float?

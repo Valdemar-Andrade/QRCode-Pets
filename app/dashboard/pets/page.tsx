@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardBody, CardHeader } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
+import { ImageUpload } from '@/components/ui/ImageUpload';
+import { ImageLightbox } from '@/components/ui/ImageLightbox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createPetSchema, type CreatePetInput } from '@/lib/validations/pet';
@@ -18,6 +21,7 @@ interface Pet {
   name: string;
   breed: string | null;
   species: string;
+  gender: string | null;
   birthDate: Date | null;
   color: string | null;
   weight: number | null;
@@ -41,15 +45,23 @@ export default function PetsPage() {
   const [selectedPet, setSelectedPet] = useState<Pet | null>(null);
   const [qrCodeImage, setQrCodeImage] = useState<string>('');
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxAlt, setLightboxAlt] = useState<string>('');
+
+  const [photoBase64, setPhotoBase64] = useState<string>('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<CreatePetInput>({
     resolver: zodResolver(createPetSchema),
   });
+
+  const photoUrl = watch('photoUrl');
 
   useEffect(() => {
     fetchPets();
@@ -76,12 +88,18 @@ export default function PetsPage() {
 
   const onSubmit = async (data: CreatePetInput) => {
     try {
+      // Se houver foto em base64, usar ela
+      const petData = {
+        ...data,
+        photoUrl: photoBase64 || data.photoUrl || '',
+      };
+
       const response = await fetch('/api/pets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(petData),
       });
 
       if (!response.ok) {
@@ -92,6 +110,7 @@ export default function PetsPage() {
 
       setIsModalOpen(false);
       reset();
+      setPhotoBase64('');
       fetchPets();
     } catch (error) {
       console.error('Error creating pet:', error);
@@ -204,19 +223,25 @@ export default function PetsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Meus Pets</h1>
-        <Button onClick={() => setIsModalOpen(true)}>Adicionar Pet</Button>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent flex items-center gap-3">
+          <span>🐾</span>
+          <span>Meus Pets</span>
+        </h1>
+        <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
+          + Adicionar Pet 🐶
+        </Button>
       </div>
 
       {pets.length === 0 ? (
-        <Card>
+        <Card className="border-2 border-pink-200">
           <CardBody>
             <div className="text-center py-12">
-              <p className="text-gray-600 mb-4">
+              <div className="text-6xl mb-4">🐾</div>
+              <p className="text-gray-600 mb-4 text-lg">
                 Você ainda não tem pets cadastrados.
               </p>
-              <Button onClick={() => setIsModalOpen(true)}>
-                Adicionar Primeiro Pet
+              <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600">
+                Adicionar Primeiro Pet 🎉
               </Button>
             </div>
           </CardBody>
@@ -224,34 +249,54 @@ export default function PetsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {pets.map((pet) => (
-            <Card key={pet.id}>
-              <div className="relative h-48 bg-gray-200">
+            <Card key={pet.id} className="border-2 border-pink-200 hover:border-pink-300 transition-all hover:shadow-xl">
+              <div 
+                className="relative h-48 bg-gradient-to-br from-pink-100 to-purple-100 cursor-pointer"
+                onClick={() => {
+                  if (pet.photoUrl) {
+                    setLightboxImage(pet.photoUrl);
+                    setLightboxAlt(pet.name);
+                  }
+                }}
+              >
                 {pet.photoUrl ? (
-                  <Image
-                    src={pet.photoUrl}
-                    alt={pet.name}
-                    fill
-                    className="object-cover"
-                  />
+                  <>
+                    <Image
+                      src={pet.photoUrl}
+                      alt={pet.name}
+                      fill
+                      className="object-cover hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                      <div className="opacity-0 hover:opacity-100 transition-opacity text-white text-sm font-medium bg-black/50 px-3 py-1 rounded-full">
+                        Clique para ampliar 🔍
+                      </div>
+                    </div>
+                  </>
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-400 text-6xl">
                     🐾
                   </div>
                 )}
                 {pet.isLost && (
-                  <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                    PERDIDO
+                  <div className="absolute top-2 right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg animate-pulse">
+                    ⚠️ PERDIDO
                   </div>
                 )}
               </div>
               <CardHeader>
-                <h2 className="text-xl font-semibold">{pet.name}</h2>
+                <h2 className="text-xl font-bold text-gray-900">{pet.name}</h2>
                 <p className="text-gray-600 text-sm">
                   {pet.species} {pet.breed ? `- ${pet.breed}` : ''}
                 </p>
               </CardHeader>
               <CardBody>
                 <div className="space-y-2 text-sm text-gray-600 mb-4">
+                  {pet.gender && (
+                    <p>
+                      <strong>Gênero:</strong> {pet.gender}
+                    </p>
+                  )}
                   <p>
                     <strong>Cor:</strong> {pet.color || 'Não informado'}
                   </p>
@@ -306,81 +351,134 @@ export default function PetsPage() {
         onClose={() => {
           setIsModalOpen(false);
           reset();
+          setPhotoBase64('');
         }}
-        title="Adicionar Novo Pet"
+        title={
+          <div className="flex items-center gap-2">
+            <span>🐾</span>
+            <span>Adicionar Novo Pet</span>
+          </div>
+        }
         size="lg"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <Input
-            label="Nome *"
-            {...register('name')}
-            error={errors.name?.message}
-            placeholder="Nome do pet"
-          />
-
-          <Input
-            label="Espécie *"
-            {...register('species')}
-            error={errors.species?.message}
-            placeholder="Ex: Cachorro, Gato, etc."
-          />
-
-          <Input
-            label="Raça"
-            {...register('breed')}
-            error={errors.breed?.message}
-            placeholder="Raça do pet"
-          />
-
-          <Input
-            label="Data de Nascimento"
-            type="date"
-            {...register('birthDate')}
-            error={errors.birthDate?.message}
-          />
-
-          <Input
-            label="Cor"
-            {...register('color')}
-            error={errors.color?.message}
-            placeholder="Cor do pet"
-          />
-
-          <Input
-            label="Peso (kg)"
-            type="number"
-            step="0.1"
-            {...register('weight', { valueAsNumber: true })}
-            error={errors.weight?.message}
-            placeholder="Peso em kg"
-          />
-
-          <Input
-            label="URL da Foto"
-            type="url"
-            {...register('photoUrl')}
-            error={errors.photoUrl?.message}
-            placeholder="https://exemplo.com/foto.jpg"
-          />
-
-          <Textarea
-            label="Informações Médicas"
-            {...register('medicalInfo')}
-            error={errors.medicalInfo?.message}
-            placeholder="Alergias, medicações, etc."
-            rows={4}
-          />
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isLost"
-              {...register('isLost')}
-              className="mr-2"
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+          {/* Informações Básicas */}
+          <div className="space-y-4 p-4 bg-pink-50 rounded-xl border border-pink-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span>📝</span>
+              <span>Informações Básicas</span>
+            </h3>
+            
+            <Input
+              label="Nome *"
+              {...register('name')}
+              error={errors.name?.message}
+              placeholder="Nome do pet"
             />
-            <label htmlFor="isLost" className="text-sm text-gray-700">
-              Pet está perdido
-            </label>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Espécie *"
+                {...register('species')}
+                error={errors.species?.message}
+                placeholder="Ex: Cachorro, Gato, etc."
+              />
+
+              <Input
+                label="Raça"
+                {...register('breed')}
+                error={errors.breed?.message}
+                placeholder="Raça do pet"
+              />
+            </div>
+
+            <Select
+              label="Gênero"
+              {...register('gender')}
+              error={errors.gender?.message}
+              options={[
+                { value: 'Macho', label: 'Macho' },
+                { value: 'Fêmea', label: 'Fêmea' },
+              ]}
+            />
+          </div>
+
+          {/* Características Físicas */}
+          <div className="space-y-4 p-4 bg-purple-50 rounded-xl border border-purple-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span>🎨</span>
+              <span>Características Físicas</span>
+            </h3>
+
+            <Input
+              label="Data de Nascimento ou Adoção"
+              type="date"
+              {...register('birthDate')}
+              error={errors.birthDate?.message}
+              helperText="Se não souber a data exata, use a data de adoção ou uma data aproximada"
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Cor"
+                {...register('color')}
+                error={errors.color?.message}
+                placeholder="Cor do pet"
+              />
+
+              <Input
+                label="Peso (kg)"
+                type="number"
+                step="0.1"
+                {...register('weight', { valueAsNumber: true })}
+                error={errors.weight?.message}
+                placeholder="Peso em kg"
+              />
+            </div>
+          </div>
+
+          {/* Foto */}
+          <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span>📸</span>
+              <span>Foto do Pet</span>
+            </h3>
+            <ImageUpload
+              value={photoBase64 || photoUrl || ''}
+              onChange={(base64) => {
+                setPhotoBase64(base64);
+                setValue('photoUrl', base64);
+              }}
+              error={errors.photoUrl?.message}
+            />
+          </div>
+
+          {/* Informações Adicionais */}
+          <div className="space-y-4 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span>⚕️</span>
+              <span>Informações Adicionais</span>
+            </h3>
+
+            <Textarea
+              label="Informações Médicas"
+              {...register('medicalInfo')}
+              error={errors.medicalInfo?.message}
+              placeholder="Alergias, medicações, condições especiais, etc."
+              rows={4}
+            />
+
+            <div className="flex items-center p-3 bg-white rounded-lg border border-gray-200">
+              <input
+                type="checkbox"
+                id="isLost"
+                {...register('isLost')}
+                className="mr-3 w-4 h-4 text-pink-600 border-gray-300 rounded focus:ring-pink-500"
+              />
+              <label htmlFor="isLost" className="text-sm font-medium text-gray-700 cursor-pointer">
+                ⚠️ Pet está perdido
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
@@ -446,6 +544,14 @@ export default function PetsPage() {
           )}
         </div>
       </Modal>
+
+      {/* Lightbox de Imagem */}
+      <ImageLightbox
+        isOpen={lightboxImage !== null}
+        onClose={() => setLightboxImage(null)}
+        imageUrl={lightboxImage || ''}
+        alt={lightboxAlt}
+      />
     </div>
   );
 }

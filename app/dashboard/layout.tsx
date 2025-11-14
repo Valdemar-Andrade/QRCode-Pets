@@ -45,9 +45,9 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 via-purple-50 to-blue-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Carregando...</p>
         </div>
       </div>
@@ -55,31 +55,33 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
       {/* Navbar */}
-      <nav className="bg-white shadow-sm border-b">
+      <nav className="bg-white/90 backdrop-blur-sm shadow-lg border-b-2 border-pink-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link href="/dashboard/pets" className="text-xl font-bold text-indigo-600">
-                QR Code Pets
+              <Link href="/dashboard/pets" className="text-2xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent flex items-center gap-2">
+                <span>🐾</span>
+                <span>QR Code Pets</span>
               </Link>
               <div className="ml-10 flex space-x-4">
                 <Link
                   href="/dashboard/pets"
-                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-pink-100 hover:text-pink-600 transition-colors"
                 >
                   Meus Pets
                 </Link>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                Olá, {user?.name}
+              <span className="text-sm text-gray-700 flex items-center gap-2">
+                <span>👋</span>
+                <span>Olá, {user?.name}</span>
               </span>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
+                className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-pink-100 rounded-lg transition-colors"
               >
                 Sair
               </button>
